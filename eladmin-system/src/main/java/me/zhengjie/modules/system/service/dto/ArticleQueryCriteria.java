@@ -14,6 +14,9 @@ public class ArticleQueryCriteria {
     @Query
     private Integer type;
 
+    @Query
+    private String articleKindName;
+
     @Query(type = Query.Type.BETWEEN)
     private List<Timestamp> createTime;
 }
