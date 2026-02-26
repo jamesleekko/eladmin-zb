@@ -1,5 +1,9 @@
 #配置数据源
 spring:
+  servlet:
+    multipart:
+      # 使用 /tmp 目录，避免 ~/.eladmin 的 Operation not permitted 权限问题 (macOS)
+      location: /tmp/eladmin-upload
   datasource:
     druid:
       db-type: com.alibaba.druid.pool.DruidDataSource

@@ -95,6 +95,14 @@ public interface UserService {
     Map<String, String> updateAvatar(MultipartFile file);
 
     /**
+     * 管理员修改指定用户头像
+     * @param userId 用户ID
+     * @param file 文件
+     * @return /
+     */
+    Map<String, String> updateAvatar(Long userId, MultipartFile file);
+
+    /**
      * 修改邮箱
      * @param username 用户名
      * @param email 邮箱

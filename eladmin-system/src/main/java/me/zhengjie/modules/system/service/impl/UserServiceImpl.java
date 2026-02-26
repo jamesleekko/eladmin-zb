@@ -243,6 +243,32 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public Map<String, String> updateAvatar(Long userId, MultipartFile multipartFile) {
+        // 文件大小验证
+        FileUtil.checkSize(properties.getAvatarMaxSize(), multipartFile.getSize());
+        // 验证文件上传的格式
+        String image = "gif jpg png jpeg";
+        String fileType = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
+        if(fileType != null && !image.contains(fileType)){
+            throw new BadRequestException("文件格式错误！, 仅支持 " + image +" 格式");
+        }
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(User.class, "id", String.valueOf(userId)));
+        String oldPath = user.getAvatarPath();
+        File file = FileUtil.upload(multipartFile, properties.getPath().getAvatar());
+        user.setAvatarPath(Objects.requireNonNull(file).getPath());
+        user.setAvatarName(file.getName());
+        userRepository.save(user);
+        if (StringUtils.isNotBlank(oldPath)) {
+            FileUtil.del(oldPath);
+        }
+        delCaches(user.getId(), user.getUsername());
+        return new HashMap<String, String>(1) {{
+            put("avatar", file.getName());
+        }};
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateEmail(String username, String email) {
         userRepository.updateEmail(username, email);
         flushCache(username);

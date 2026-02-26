@@ -34,12 +34,11 @@ public class MultipartConfig {
     @Bean
     MultipartConfigElement multipartConfigElement() {
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        String location = System.getProperty("user.home") + "/.eladmin/file/tmp";
+        // 使用 /tmp 目录，避免 ~/.eladmin 的 Operation not permitted 权限问题 (macOS)
+        String location = "/tmp/eladmin-upload";
         File tmpFile = new File(location);
         if (!tmpFile.exists()) {
-            if (!tmpFile.mkdirs()) {
-                System.out.println("create was not successful.");
-            }
+            tmpFile.mkdirs();
         }
         factory.setLocation(location);
         return factory.createMultipartConfig();

@@ -192,6 +192,15 @@ public class UserController {
         return new ResponseEntity<>(userService.updateAvatar(avatar), HttpStatus.OK);
     }
 
+    @Log("管理员修改用户头像")
+    @ApiOperation("管理员修改指定用户头像")
+    @PostMapping(value = "/updateAvatar/{userId}")
+    @PreAuthorize("@el.check('user:edit')")
+    public ResponseEntity<Object> updateUserAvatarByAdmin(@PathVariable Long userId, @RequestParam MultipartFile avatar){
+        checkLevelByUserId(userId);
+        return new ResponseEntity<>(userService.updateAvatar(userId, avatar), HttpStatus.OK);
+    }
+
     @Log("修改邮箱")
     @ApiOperation("修改邮箱")
     @PostMapping(value = "/updateEmail/{code}")
@@ -215,6 +224,20 @@ public class UserController {
         Integer optLevel = roleService.findByRoles(resources.getRoles());
         if (currentLevel > optLevel) {
             throw new BadRequestException("角色权限不足");
+        }
+    }
+
+    /**
+     * 根据用户ID检查当前用户是否有权限操作目标用户（角色级别）
+     * @param userId 目标用户ID
+     */
+    private void checkLevelByUserId(Long userId) {
+        List<RoleSmallDto> currentRoles = roleService.findByUsersId(SecurityUtils.getCurrentUserId());
+        List<RoleSmallDto> targetRoles = roleService.findByUsersId(userId);
+        Integer currentLevel = currentRoles.isEmpty() ? Integer.MAX_VALUE : Collections.min(currentRoles.stream().map(RoleSmallDto::getLevel).collect(Collectors.toList()));
+        Integer optLevel = targetRoles.isEmpty() ? Integer.MAX_VALUE : Collections.min(targetRoles.stream().map(RoleSmallDto::getLevel).collect(Collectors.toList()));
+        if (currentLevel > optLevel) {
+            throw new BadRequestException("角色权限不足，不能修改该用户");
         }
     }
 }
